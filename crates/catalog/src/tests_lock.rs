@@ -53,7 +53,7 @@ fn leftover_lock_files_are_not_a_lock() {
     let _serial = serial();
     let dir = temp_dir("stale");
     std::fs::write(dir.join(LOCK), b"").unwrap();
-    std::fs::write(dir.join(OWNER), br#"{"pid":999999,"host":"elsewhere","program":"NOVA Işık","version":"0.2.0","since":1}"#).unwrap();
+    std::fs::write(dir.join(OWNER), br#"{"pid":999999,"host":"elsewhere","program":"NOVA Isik","version":"0.2.0","since":1}"#).unwrap();
     let l = LibraryLock::acquire(&dir, "NOVA Işık").unwrap();
     assert!(l.held());
     let owner: LockOwner = serde_json::from_slice(&std::fs::read(dir.join(OWNER)).unwrap()).unwrap();

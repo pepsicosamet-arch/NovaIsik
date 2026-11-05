@@ -14,9 +14,9 @@ fn main() {
     }
     let mut res = winresource::WindowsResource::new();
     res.set_icon("../../assets/app-icon/lightcraft.ico")
-        .set("ProductName", "NOVA Isik")
-        .set("FileDescription", "NOVA Isik photo library and raw developer")
-        .set("LegalCopyright", "Copyright (c) the NOVA Isik authors. MIT OR Apache-2.0.")
+        .set("ProductName", "NOVA Işık")
+        .set("FileDescription", "NOVA Işık photo library and raw developer")
+        .set("LegalCopyright", "Copyright (c) the NOVA Işık authors. MIT OR Apache-2.0.")
         .set("OriginalFilename", "lightcraft.exe")
         .set("InternalName", "lightcraft");
     if let Err(e) = res.compile() {
