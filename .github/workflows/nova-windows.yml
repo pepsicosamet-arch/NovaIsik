@@ -1,0 +1,74 @@
+name: "NOVA Işık - Windows Kurulum"
+
+# Yeni sürüm: Cargo.toml [workspace.package] version değerini artır, sonra
+#   git tag v<sürüm> && git push origin v<sürüm>
+# ya da Actions > bu iş akışı > "Run workflow".
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 240
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+      LIGHTCRAFT_BUILD_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Çeviri kataloğu (craft-i18n)
+        id: i18n
+        shell: bash
+        run: |
+          if [ -f craft-i18n.rev ]; then echo "rev=$(tr -d '[:space:]' < craft-i18n.rev)" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.i18n.outputs.rev != ''
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-i18n
+          ref: ${{ steps.i18n.outputs.rev }}
+          path: craft-i18n
+          persist-credentials: false
+      - if: steps.i18n.outputs.rev != ''
+        shell: bash
+        run: echo "CRAFT_I18N_DIR=${{ github.workspace }}/craft-i18n" >> "$GITHUB_ENV"
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+
+      - name: WiX kur
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+
+      - name: Derle ve paketle
+        shell: pwsh
+        run: ./packaging/windows/package.ps1 -Arch x64
+
+      - name: Sürümü oku
+        id: ver
+        shell: bash
+        run: |
+          v=$(awk '/^\[workspace.package\]/{p=1;next} /^\[/{p=0} p && /^version *=/{gsub(/[" ]/,"",$0); sub("version=","",$0); print; exit}' Cargo.toml)
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Yayınla
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: "NOVA Işık v${{ steps.ver.outputs.version }}"
+          body: |
+            NOVA Işık Windows kurulum dosyaları.
+            - `.msi`: kurulum (önerilen)
+            - `-portable.zip`: kurulumsuz, klasörden çalışır
+            Geliştirici: Samet Şahin (@xsametsahinx)
+          files: dist/release/*
+          make_latest: true
