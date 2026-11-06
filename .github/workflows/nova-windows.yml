@@ -20,7 +20,7 @@ jobs:
       CARGO_INCREMENTAL: 0
       LIGHTCRAFT_BUILD_SHA: ${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Çeviri kataloğu (craft-i18n)
         id: i18n
@@ -28,7 +28,7 @@ jobs:
         run: |
           if [ -f craft-i18n.rev ]; then echo "rev=$(tr -d '[:space:]' < craft-i18n.rev)" >> "$GITHUB_OUTPUT"; fi
       - if: steps.i18n.outputs.rev != ''
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: storytold/craft-i18n
           ref: ${{ steps.i18n.outputs.rev }}
